@@ -36,4 +36,26 @@ app.get("/projects", function (req, res) {
   })
 });
 
+
+// skills table
+
+app.get("/skills", function (req, res) {
+  const projectId = req.query.projectId;
+  const queryGet = "SELECT * FROM skills WHERE projectId = ?;";
+  connection.query(queryGet, projectId, function (error, data) {
+    if (error) {
+      console.log("Error fetching skills", error);
+      res.status(500).json({
+        error: error
+      })
+    }
+    else {
+      res.status(200).json({
+        skills: data
+      })
+    }
+  })
+});
+
 module.exports.projects = serverless(app);
+module.exports.skills = serverless(app);
