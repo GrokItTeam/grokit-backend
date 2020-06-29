@@ -6,6 +6,7 @@ const mysql = require("mysql");
 const moment = require("moment");
 
 const {skillChooser} = require('./skillChooser');
+const {markAsPractised} = require('./markAsPractised');
 
 const app = express();
 
@@ -19,7 +20,7 @@ const connection = mysql.createConnection({
   database: "grokit"
 });
 
-// projects table
+// PROJECTS TABLE
 
 app.get("/projects", function (req, res) {
   const userIdValue = req.query.userId;
@@ -60,7 +61,7 @@ app.get("/projects/:projectId/skillToDo", function (req, res) {
 });
 
 
-// skills table
+// SKILLS TABLE
 
 app.get("/skills", function (req, res) {
   const projectId = req.query.projectId;
@@ -79,6 +80,12 @@ app.get("/skills", function (req, res) {
     }
   })
 });
+
+app.put("skills/:skillId/markAsPractised", function (req, res) {
+  console.log(req.query);
+});
+
+
 
 module.exports.projects = serverless(app);
 module.exports.skills = serverless(app);
