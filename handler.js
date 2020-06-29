@@ -36,6 +36,24 @@ app.get("/projects", function (req, res) {
   })
 });
 
+app.put("/projects", function (req, res) {
+  const projectIdValue = req.query.projectId;
+  const nameValue = req.body.name;
+  const userIdValue = req.body.userId;  
+  const queryUpdate = "UPDATE projects SET name = ?, userId = ? WHERE projectId = ?;";
+  connection.query(queryUpdate, [nameValue, userIdValue, projectIdValue], function (error, data) {
+    if (error) {
+      console.log("Error updating projects", error);
+      res.status(500).json({
+        error: error
+      })
+    }
+    else {
+      res.sendStatus(200)
+    }
+  })
+});
+
 
 // skills table
 

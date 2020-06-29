@@ -17,6 +17,10 @@ functions:
           path: projects
           method: get
           cors: true
+      - http: 
+          path: projects
+          method: put
+          cors: true
   skills:  
     handler: handler.skills
     environment:
