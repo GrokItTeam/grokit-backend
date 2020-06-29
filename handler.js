@@ -36,8 +36,8 @@ app.get("/projects", function (req, res) {
   })
 });
 
-app.put("/projects", function (req, res) {
-  const projectIdValue = req.query.projectId;
+app.put("/projects/:projectId", function (req, res) {
+  const projectIdValue = req.params.projectId;
   const nameValue = req.body.name;
   const userIdValue = req.body.userId;  
   const queryUpdate = "UPDATE projects SET name = ?, userId = ? WHERE projectId = ?;";
@@ -71,6 +71,27 @@ app.get("/skills", function (req, res) {
       res.status(200).json({
         skills: data
       })
+    }
+  })
+});
+
+app.put("/skills/:skillId", function (req, res) {
+  const skillIdValue = req.params.skillId;
+  const nameValue = req.body.name;
+  const lastGap0Value = req.body.lastGap0;
+  const lastGap1Value = req.body.lastGap1;
+  const startedValue = req.body.started;
+  const projectIdValue = req.body.projectId;  
+  const queryUpdate = "UPDATE skills SET name = ?, lastGap0 = ?, lastGap1 = ?, started = ?, projectId = ? WHERE skillId = ?;";
+  connection.query(queryUpdate, [nameValue, lastGap0Value, lastGap1Value, startedValue, projectIdValue, skillIdValue], function (error, data) {
+    if (error) {
+      console.log("Error updating skills", error);
+      res.status(500).json({
+        error: error
+      })
+    }
+    else {
+      res.sendStatus(200)
     }
   })
 });
