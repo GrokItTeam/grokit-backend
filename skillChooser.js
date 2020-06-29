@@ -1,21 +1,14 @@
 const moment = require('moment');
 
 function skillChooser(skills, today) {
-    let tomorrow = moment(today).add(1, "days");
     // find skills that need to be practiced
-    let todaySkills = skills.filter(skill => moment(skill.nextDate).isBefore(tomorrow));
+    let todaySkills = skills.filter(skill => moment(skill.nextDate).isBefore(today));
     // if there are none, start a new skill
     if (todaySkills.length === 0) {
         startNewSkill = skills.find(skill => !skill.started);
         // if there are no practices at all
         if (!startNewSkill) { return }
-        else {
-            startNewSkill.nextDate = today;
-            startNewSkill.lastGap0 = 0;
-            startNewSkill.lastGap1 = 1;
-            startNewSkill.started = true;
-            return startNewSkill;
-        }
+        else return startNewSkill;
     }
     return lowestGap(todaySkills);
 }

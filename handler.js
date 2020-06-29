@@ -81,11 +81,28 @@ app.get("/skills", function (req, res) {
   })
 });
 
-app.put("skills/:skillId/markAsPractised", function (req, res) {
-  console.log(req.query);
+app.put("/skills/:skillId/markAsPractised", function (req, res) {
+  let practisedSkill = markAsPractised(req.body,moment());
+  const skillIdValue = req.params.skillId;
+  const nameValue = practisedSkill.name;
+  const nextDateValue = practisedSkill.nextDate
+  const lastGap0Value = practisedSkill.lastGap0;
+  const lastGap1Value = practisedSkill.lastGap1;
+  const startedValue = practisedSkill.started;
+  const projectIdValue = practisedSkill.projectId;  
+  const queryUpdate = "UPDATE skills SET name = ?, nextDate = ?, lastGap0 = ?, lastGap1 = ?, started = ?, projectId = ? WHERE skillId = ?;";
+  connection.query(queryUpdate, [nameValue, nextDateValue, lastGap0Value, lastGap1Value, startedValue, projectIdValue, skillIdValue], function (error, data) {
+    if (error) {
+      console.log("Error updating skills", error);
+      res.status(500).json({
+        error: error
+      })
+    }
+    else {
+      res.sendStatus(200)
+    }
+  })
 });
-
-
 
 module.exports.projects = serverless(app);
 module.exports.skills = serverless(app);
