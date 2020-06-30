@@ -38,10 +38,10 @@ app.get("/projects", function (req, res) {
 });
 
 app.post("/projects", function (req, res) {
-  const projectAdd = "INSERT INTO projects (name, userId, datePracticed) VALUES (?, ?, ?);";
+  const projectAdd = "INSERT INTO projects (name, userId, datePractised) VALUES (?, ?, ?);";
   const querySelect = "SELECT * FROM projects where projectId = ?";
 
-  connection.query(projectAdd, [req.body.name, req.body.userId, req.body.datePracticed], function (error, data) {
+  connection.query(projectAdd, [req.body.name, req.body.userId, req.body.datePractised], function (error, data) {
     if (error) {
       console.log("Error adding a project", error);
       res.status(500).json({
