@@ -45,7 +45,7 @@ app.get("/projects", function (req, res) {
           const data = projectData.map((project) => {
             const skills = skillData.filter((skill) => skill.projectId === project.projectId);
             project.skills = skills;
-            project.skillToDo = skillChooser(skills, moment());
+            project.skillToDo = skillChooser(skills, moment()) ? skillChooser(skills, moment()).skillId : false;
             return project;
           });
           res.status(200).json({
