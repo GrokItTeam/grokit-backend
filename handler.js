@@ -8,7 +8,6 @@ const moment = require("moment");
 const { skillChooser } = require("./skillChooser");
 
 const app = express();
-
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -19,7 +18,7 @@ const connection = mysql.createConnection({
   database: "grokit",
 });
 
-// projects table
+// get projects
 
 app.get("/projects", function (req, res) {
   const userIdValue = req.query.userId;
