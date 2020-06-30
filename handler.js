@@ -5,8 +5,8 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const moment = require("moment");
 
-const {skillChooser} = require('./skillChooser');
-const {markAsPractised} = require('./markAsPractised');
+const { skillChooser } = require('./skillChooser');
+const { markAsPractised } = require('./markAsPractised');
 
 const app = express();
 app.use(cors());
@@ -59,7 +59,7 @@ app.get("/projects", function (req, res) {
 })
 
 app.put("/skills/:skillId/markAsPractised", function (req, res) {
-  const practisedSkill = markAsPractised(req.body,moment());
+  const practisedSkill = markAsPractised(req.body, moment());
   const skillIdValue = req.params.skillId;
 
   const queryUpdateSkills = "UPDATE skills SET ? WHERE skillId = ?;";
@@ -71,20 +71,34 @@ app.put("/skills/:skillId/markAsPractised", function (req, res) {
       })
     }
     else {
-      const queryUpdateProjects = "UPDATE projects SET datePractised = NOW() WHERE projectId = ?;";
-      connection.query(queryUpdateProjects, [practisedSkill.projectId], function (error, projectData) {
+      const queryGetSkill = "SELECT * FROM skills where skillId = ?;";
+      connection.query(queryGetSkill, [skillIdValue], function (error, updatedSkillData) {
         if (error) {
-          console.log("Error updating project", error);
+          console.log("Error getting skill", error);
           res.status(500).json({
             error: error
           })
         }
         else {
-          res.sendStatus(200)
+          const updatedSkill = updatedSkillData;
+          const queryUpdateProjects = "UPDATE projects SET datePractised = NOW() WHERE projectId = ?;";
+          connection.query(queryUpdateProjects, [practisedSkill.projectId], function (error, projectData) {
+            if (error) {
+              console.log("Error updating project", error);
+              res.status(500).json({
+                error: error
+              })
+            }
+            else {
+              res.status(200).json({
+                updatedSkill
+              })
+            }
+          });
         }
-      })
+      });
     }
-  })
+  });
 });
 
 module.exports.projects = serverless(app);
