@@ -34,10 +34,11 @@ CREATE TABLE `projects` (
   `projectId` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `userId` varchar(255) NOT NULL,
+  `datePractised` date DEFAULT NULL,
   PRIMARY KEY (`projectId`),
   KEY `userId` (`userId`),
   CONSTRAINT `projects_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `users` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,6 +47,7 @@ CREATE TABLE `projects` (
 
 LOCK TABLES `projects` WRITE;
 /*!40000 ALTER TABLE `projects` DISABLE KEYS */;
+INSERT INTO `projects` VALUES (1,'JavaScript Array Methods','test-id','2020-06-29');
 /*!40000 ALTER TABLE `projects` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -67,7 +69,7 @@ CREATE TABLE `skills` (
   PRIMARY KEY (`skillId`),
   KEY `projectId` (`projectId`),
   CONSTRAINT `skills_ibfk_1` FOREIGN KEY (`projectId`) REFERENCES `projects` (`projectId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,6 +78,7 @@ CREATE TABLE `skills` (
 
 LOCK TABLES `skills` WRITE;
 /*!40000 ALTER TABLE `skills` DISABLE KEYS */;
+INSERT INTO `skills` VALUES (9,'map','2020-06-30',1,1,1,1),(10,'forEach','2020-06-30',1,1,1,1),(11,'filter','2020-06-30',1,1,1,1),(12,'reduce',NULL,NULL,NULL,0,1);
 /*!40000 ALTER TABLE `skills` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -99,6 +102,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES ('test-id','Jonas Kahnwald');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
@@ -112,4 +116,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-28 18:16:04
+-- Dump completed on 2020-06-29 20:40:32

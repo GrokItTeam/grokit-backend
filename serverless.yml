@@ -17,10 +17,6 @@ functions:
           path: projects
           method: get
           cors: true
-      - http: 
-          path: projects/{projectId}/skillToDo
-          method: get
-          cors: true
   skills:  
     handler: handler.skills
     environment:
@@ -28,10 +24,7 @@ functions:
       DB_USER: ${opt:DB_USER}
       DB_PASSWORD: ${opt:DB_PASSWORD}
     events:
-      - http: 
-          path: skills
-          method: get
-          cors: true
+      
       - http: 
           path: skills/{skillId}/markAsPractised
           method: put

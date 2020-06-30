@@ -9,7 +9,6 @@ const {skillChooser} = require('./skillChooser');
 const {markAsPractised} = require('./markAsPractised');
 
 const app = express();
-
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -20,12 +19,14 @@ const connection = mysql.createConnection({
   database: "grokit"
 });
 
-// PROJECTS TABLE
+// get projects
 
 app.get("/projects", function (req, res) {
   const userIdValue = req.query.userId;
-  const queryGet = "SELECT * FROM projects WHERE userId = ?;";
-  connection.query(queryGet, userIdValue, function (error, data) {
+  const queryGetProjects = "SELECT * FROM projects WHERE userId = ?;";
+  const queryGetSkills = "SELECT * FROM skills WHERE projectId IN (?);";
+
+  connection.query(queryGetProjects, [userIdValue], function (error, projectData) {
     if (error) {
       console.log("Error fetching projects", error);
       res.status(500).json({
@@ -33,53 +34,29 @@ app.get("/projects", function (req, res) {
       })
     }
     else {
-      res.status(200).json({
-        projects: data
-      })
+      const projectIds = projectData.map(project => project.projectId);
+      connection.query(queryGetSkills, [projectIds], function (error, skillData) {
+        if (error) {
+          console.log("Error fetching skills", error);
+          res.status(500).json({
+            error: error
+          })
+        }
+        else {
+          const data = projectData.map((project) => {
+            const skills = skillData.filter((skill) => skill.projectId === project.projectId);
+            project.skills = skills;
+            project.skillToDo = skillChooser(skills, moment()) ? skillChooser(skills, moment()).skillId : false;
+            return project;
+          });
+          res.status(200).json({
+            projects: data
+          })
+        }
+      });
     }
-  })
-});
-
-//get skill to do by projectId
-app.get("/projects/:projectId/skillToDo", function (req, res) {
-  const projectIdValue = req.params.projectId;
-  const queryGet = "SELECT * FROM skills WHERE projectId = ?;";
-  connection.query(queryGet, projectIdValue, function (error, data) {
-    if (error) {
-      console.log("Error fetching skills", error);
-      res.status(500).json({
-        error: error
-      })
-    }
-    else {
-      let skillToDo = skillChooser(data,moment());
-      res.status(200).json({
-        skillToDo
-      })
-    }
-  })
-});
-
-
-// SKILLS TABLE
-
-app.get("/skills", function (req, res) {
-  const projectId = req.query.projectId;
-  const queryGet = "SELECT * FROM skills WHERE projectId = ?;";
-  connection.query(queryGet, projectId, function (error, data) {
-    if (error) {
-      console.log("Error fetching skills", error);
-      res.status(500).json({
-        error: error
-      })
-    }
-    else {
-      res.status(200).json({
-        skills: data
-      })
-    }
-  })
-});
+  });
+})
 
 app.put("/skills/:skillId/markAsPractised", function (req, res) {
   let practisedSkill = markAsPractised(req.body,moment());
