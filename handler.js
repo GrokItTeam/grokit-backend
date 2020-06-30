@@ -8,7 +8,6 @@ const moment = require("moment");
 const { skillChooser } = require('./skillChooser');
 
 const app = express();
-
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -19,7 +18,7 @@ const connection = mysql.createConnection({
   database: "grokit"
 });
 
-// get projects and skills
+// get projects
 
 app.get("/projects", function (req, res) {
   const userIdValue = req.query.userId;
@@ -34,51 +33,28 @@ app.get("/projects", function (req, res) {
       })
     }
     else {
-      let projectIds = projectData.map(project => project.projectId);
-      console.log(projectIds);
+      const projectIds = projectData.map(project => project.projectId);
       connection.query(queryGetSkills, [projectIds], function (error, skillData) {
         if (error) {
           console.log("Error fetching skills", error);
           res.status(500).json({
-            error: error,
-          });
+            error: error
+          })
         }
         else {
           const data = projectData.map((project) => {
             const skills = skillData.filter((skill) => skill.projectId === project.projectId);
             project.skills = skills;
+            project.skillToDo = skillChooser(skills, moment());
             return project;
           });
           res.status(200).json({
-            projects: data,
-          });
+            projects: data
+          })
         }
       });
     }
   });
-});
-
-
-
-//get skill to do by projectId
-app.get("/projects/:projectId/skillToDo", function (req, res) {
-  const projectIdValue = req.params.projectId;
-  const queryGet = "SELECT * FROM skills WHERE projectId = ?;";
-  connection.query(queryGet, projectIdValue, function (error, data) {
-    if (error) {
-      console.log("Error fetching skills", error);
-      res.status(500).json({
-        error: error
-      })
-    }
-    else {
-      let skillToDo = skillChooser(data, moment());
-      res.status(200).json({
-        skillToDo
-      })
-    }
-  })
-});
+})
 
 module.exports.projects = serverless(app);
-module.exports.skills = serverless(app);
