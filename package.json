@@ -1,0 +1,29 @@
+{
+  "name": "grokit-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "axios": "^0.19.2",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "moment": "^2.27.0",
+    "mysql": "^2.18.1",
+    "serverless-http": "^2.5.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GrokItTeam/grokit-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GrokItTeam/grokit-backend/issues"
+  },
+  "homepage": "https://github.com/GrokItTeam/grokit-backend#readme"
+}
