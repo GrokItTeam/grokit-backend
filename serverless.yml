@@ -23,8 +23,7 @@ functions:
       DB_HOST: ${opt:DB_HOST}
       DB_USER: ${opt:DB_USER}
       DB_PASSWORD: ${opt:DB_PASSWORD}
-    events:
-      
+    events:      
       - http: 
           path: skills/{skillId}/markAsPractised
           method: put

@@ -59,18 +59,11 @@ app.get("/projects", function (req, res) {
 })
 
 app.put("/skills/:skillId/markAsPractised", function (req, res) {
-  let practisedSkill = markAsPractised(req.body,moment());
-
+  const practisedSkill = markAsPractised(req.body,moment());
   const skillIdValue = req.params.skillId;
-  const nameValue = practisedSkill.name;
-  const nextDateValue = practisedSkill.nextDate
-  const lastGap0Value = practisedSkill.lastGap0;
-  const lastGap1Value = practisedSkill.lastGap1;
-  const startedValue = practisedSkill.started;
-  const projectIdValue = practisedSkill.projectId; 
 
-  const queryUpdateSkills = "UPDATE skills SET name = ?, nextDate = ?, lastGap0 = ?, lastGap1 = ?, started = ?, projectId = ? WHERE skillId = ?;";
-  connection.query(queryUpdateSkills, [nameValue, nextDateValue, lastGap0Value, lastGap1Value, startedValue, projectIdValue, skillIdValue], function (error, data) {
+  const queryUpdateSkills = "UPDATE skills SET ? WHERE skillId = ?;";
+  connection.query(queryUpdateSkills, [practisedSkill, skillIdValue], function (error, skillData) {
     if (error) {
       console.log("Error updating skills", error);
       res.status(500).json({
@@ -79,7 +72,7 @@ app.put("/skills/:skillId/markAsPractised", function (req, res) {
     }
     else {
       const queryUpdateProjects = "UPDATE projects SET datePractised = NOW() WHERE projectId = ?;";
-      connection.query(queryUpdateProjects, projectIdValue, function (error, data) {
+      connection.query(queryUpdateProjects, [practisedSkill.projectId], function (error, projectData) {
         if (error) {
           console.log("Error updating project", error);
           res.status(500).json({
