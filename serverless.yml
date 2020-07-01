@@ -13,7 +13,22 @@ functions:
       DB_USER: ${opt:DB_USER}
       DB_PASSWORD: ${opt:DB_PASSWORD}
     events:
-      - http: 
+      - http:
           path: projects
           method: get
+          cors: true
+      - http:
+          path: projects
+          method: post
+          cors: true
+  skills:
+    handler: handler.skills
+    environment:
+      DB_HOST: ${opt:DB_HOST}
+      DB_USER: ${opt:DB_USER}
+      DB_PASSWORD: ${opt:DB_PASSWORD}
+    events:
+      - http:
+          path: skills
+          method: post
           cors: true

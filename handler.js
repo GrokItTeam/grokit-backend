@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const moment = require("moment");
 
-const { skillChooser } = require('./skillChooser');
+const { skillChooser } = require("./skillChooser");
 
 const app = express();
 app.use(cors());
@@ -15,7 +15,7 @@ const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: "grokit"
+  database: "grokit",
 });
 
 // get projects
@@ -29,19 +29,17 @@ app.get("/projects", function (req, res) {
     if (error) {
       console.log("Error fetching projects", error);
       res.status(500).json({
-        error: error
-      })
-    }
-    else {
-      const projectIds = projectData.map(project => project.projectId);
+        error: error,
+      });
+    } else {
+      const projectIds = projectData.map((project) => project.projectId);
       connection.query(queryGetSkills, [projectIds], function (error, skillData) {
         if (error) {
           console.log("Error fetching skills", error);
           res.status(500).json({
-            error: error
-          })
-        }
-        else {
+            error: error,
+          });
+        } else {
           const data = projectData.map((project) => {
             const skills = skillData.filter((skill) => skill.projectId === project.projectId);
             project.skills = skills;
@@ -49,12 +47,68 @@ app.get("/projects", function (req, res) {
             return project;
           });
           res.status(200).json({
-            projects: data
-          })
+            projects: data,
+          });
         }
       });
     }
   });
-})
+});
+
+app.post("/projects", function (req, res) {
+  const projectAdd = "INSERT INTO projects (name, userId, datePractised) VALUES (?, ?, ?);";
+  const querySelect = "SELECT * FROM projects where projectId = ?";
+
+  connection.query(projectAdd, [req.body.name, req.body.userId, req.body.datePractised], function (error, data) {
+    if (error) {
+      console.log("Error adding a project", error);
+      res.status(500).json({
+        error: error,
+      });
+    } else {
+      connection.query(querySelect, [data.insertId], function (error, data) {
+        if (error) {
+          console.log("Error adding a project", error);
+          res.status(500).json({
+            error: error,
+          });
+        } else {
+          res.status(200).json({
+            projects: data,
+          });
+        }
+      });
+    }
+  });
+});
+
+app.post("/skills", function (req, res) {
+  const skillAdd = "INSERT INTO skills (name, projectId, started) VALUES (?, ?, ?);";
+  const addedSkill = "SELECT * FROM skills where skillId = ?";
+
+  connection.query(skillAdd, [req.body.name, req.body.projectId, 0], function (error, data) {
+    if (error) {
+      console.log("Error adding a skill", error);
+      res.status(500).json({
+        error: error,
+      });
+    } else {
+      connection.query(addedSkill, [data.insertId], function (error, data) {
+        if (error) {
+          console.log("Error adding a skill", error);
+          res.status(500).json({
+            error: error,
+          });
+        } else {
+          res.status(200).json({
+            skill: data[0],
+            message: `You successfully added skill ${req.body.name}`,
+          });
+        }
+      });
+    }
+  });
+});
 
 module.exports.projects = serverless(app);
+module.exports.skills = serverless(app);
