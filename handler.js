@@ -57,4 +57,21 @@ app.get("/projects", function (req, res) {
   });
 })
 
+// put skills
+
+app.put("/skills/:skillId", function (req, res) {
+  connection.query("UPDATE skills SET name = ? WHERE skillId = ?;", [req.body.name, req.params.skillId], function (error, data) {
+    if (error) {
+      console.log("Error updating skill", error);
+      res.status(500).json({
+        error
+      });
+    }
+    else {
+      res.sendStatus(200);
+    }
+  });
+});
+
 module.exports.projects = serverless(app);
+module.exports.skills = serverless(app);
