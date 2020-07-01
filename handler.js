@@ -57,4 +57,24 @@ app.get("/projects", function (req, res) {
   });
 })
 
+
+// delete skills
+
+app.delete("/skills/:skillId", function (req, res) {
+  const skillId = req.params.skillId;
+
+  connection.query("DELETE FROM skills WHERE skillId = ?;", [skillId], function (error,data) {
+    if (error) {
+      console.log("Error deleting skill", error);
+      res.status(500).json({
+        error: error,
+      });
+    } else {
+      res.sendStatus(200)
+    }
+  })
+
+});
+
 module.exports.projects = serverless(app);
+module.exports.skills = serverless(app);
