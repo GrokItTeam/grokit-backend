@@ -114,28 +114,27 @@ app.post("/skills", function (req, res) {
 });
 
 app.put("/skills/:skillId/markAsPractised", function (req, res) {
-  const practisedSkill = markAsPractised(req.body, moment());
+
   const skillIdValue = req.params.skillId;
 
-  const queryUpdateSkills = "UPDATE skills SET ? WHERE skillId = ?;";
-  connection.query(queryUpdateSkills, [practisedSkill, skillIdValue], function (error, skillData) {
+  connection.query("SELECT * FROM skills WHERE skillId = ?;", [skillIdValue], function (error, data) {
     if (error) {
-      console.log("Error updating skills", error);
+      console.log("Error selecting skill", error);
       res.status(500).json({
         error: error
-      })
+      });
     }
     else {
-      const queryGetSkill = "SELECT * FROM skills where skillId = ?;";
-      connection.query(queryGetSkill, [skillIdValue], function (error, updatedSkillData) {
+      const practisedSkill = markAsPractised(data[0], moment());
+      const queryUpdateSkills = "UPDATE skills SET ? WHERE skillId = ?;";
+      connection.query(queryUpdateSkills, [practisedSkill, skillIdValue], function (error, skillData) {
         if (error) {
-          console.log("Error getting skill", error);
+          console.log("Error updating skills", error);
           res.status(500).json({
             error: error
           })
         }
         else {
-          const updatedSkill = updatedSkillData;
           const queryUpdateProjects = "UPDATE projects SET datePractised = NOW() WHERE projectId = ?;";
           connection.query(queryUpdateProjects, [practisedSkill.projectId], function (error, projectData) {
             if (error) {
@@ -146,8 +145,8 @@ app.put("/skills/:skillId/markAsPractised", function (req, res) {
             }
             else {
               res.status(200).json({
-                updatedSkill
-              })
+                practisedSkill
+              });
             }
           });
         }
