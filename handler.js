@@ -113,6 +113,22 @@ app.post("/skills", function (req, res) {
   });
 });
 
+app.delete("/skills/:skillId", function (req, res) {
+  const skillId = req.params.skillId;
+
+  connection.query("DELETE FROM skills WHERE skillId = ?;", [skillId], function (error,data) {
+    if (error) {
+      console.log("Error deleting skill", error);
+      res.status(500).json({
+        error: error,
+      });
+    } else {
+      res.sendStatus(200)
+    }
+  })
+
+});
+
 app.put("/skills/:skillId/markAsPractised", function (req, res) {
   const practisedSkill = markAsPractised(req.body, moment());
   const skillIdValue = req.params.skillId;
