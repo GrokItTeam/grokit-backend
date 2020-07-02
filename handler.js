@@ -5,7 +5,8 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const moment = require("moment");
 
-const { skillChooser } = require("./skillChooser");
+const { skillChooser } = require('./skillChooser');
+const { markAsPractised } = require('./markAsPractised');
 
 const app = express();
 app.use(cors());
@@ -18,7 +19,7 @@ const connection = mysql.createConnection({
   database: "grokit",
 });
 
-// get projects
+// PROJECTS ROUTE
 
 app.get("/projects", function (req, res) {
   const userIdValue = req.query.userId;
@@ -82,6 +83,8 @@ app.post("/projects", function (req, res) {
   });
 });
 
+// SKILLS ROUTE
+
 app.post("/skills", function (req, res) {
   const skillAdd = "INSERT INTO skills (name, projectId, started) VALUES (?, ?, ?);";
   const addedSkill = "SELECT * FROM skills where skillId = ?";
@@ -109,6 +112,39 @@ app.post("/skills", function (req, res) {
     }
   });
 });
+
+app.put("/skills/:skillId/markAsPractised", function (req, res) {
+  const practisedSkill = markAsPractised(req.body, moment());
+  const skillIdValue = req.params.skillId;
+
+  const queryUpdateSkills = "UPDATE skills SET ? WHERE skillId = ?;";
+  connection.query(queryUpdateSkills, [practisedSkill, skillIdValue], function (error, skillData) {
+    if (error) {
+      console.log("Error updating skills", error);
+      res.status(500).json({
+        error: error
+      })
+    }
+    else {
+      const queryUpdateProjects = "UPDATE projects SET datePractised = NOW() WHERE projectId = ?;";
+      connection.query(queryUpdateProjects, [practisedSkill.projectId], function (error, projectData) {
+        if (error) {
+          console.log("Error updating project", error);
+          res.status(500).json({
+            error: error
+          })
+        }
+        else {
+          res.status(200).json({
+            practisedSkill
+          })
+        }
+      });
+    }
+  });
+});
+
+
 
 module.exports.projects = serverless(app);
 module.exports.skills = serverless(app);
