@@ -83,6 +83,32 @@ app.post("/projects", function (req, res) {
   });
 });
 
+app.delete("/projects/:projectId", function (req, res) {
+  const projectId = req.params.projectId;
+
+  connection.query("DELETE FROM skills WHERE projectId = ?;", [projectId], function (error,data) {
+    if (error) {
+      console.log("Error deleting skills from project", error);
+      res.status(500).json({
+        error: error,
+      });
+    } 
+    else {
+      connection.query("DELETE FROM projects WHERE projectId = ?;", [projectId], function (error,data) {
+        if (error) {
+          console.log("Error deleting project", error);
+          res.status(500).json({
+            error: error,
+          });
+        } 
+        else {
+          res.sendStatus(200)
+        }
+      });
+    }
+  });
+});
+
 // SKILLS ROUTE
 
 app.post("/skills", function (req, res) {
