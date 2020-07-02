@@ -31,8 +31,13 @@ functions:
       - http: 
           path: skills/{skillId}
           method: delete
-          cors: true
+          cors: true    
       - http:
           path: skills
           method: post
           cors: true
+      - http: 
+          path: skills/{skillId}/markAsPractised
+          method: put
+          cors: true
+      
