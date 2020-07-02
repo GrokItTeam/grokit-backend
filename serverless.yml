@@ -13,11 +13,15 @@ functions:
       DB_USER: ${opt:DB_USER}
       DB_PASSWORD: ${opt:DB_PASSWORD}
     events:
-      - http: 
+      - http:
           path: projects
           method: get
           cors: true
-  skills:  
+      - http:
+          path: projects
+          method: post
+          cors: true
+  skills:
     handler: handler.skills
     environment:
       DB_HOST: ${opt:DB_HOST}
@@ -27,4 +31,8 @@ functions:
       - http: 
           path: skills/{skillId}/markAsPractised
           method: put
+          cors: true
+      - http:
+          path: skills
+          method: post
           cors: true
