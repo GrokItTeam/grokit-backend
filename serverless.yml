@@ -13,9 +13,13 @@ functions:
       DB_USER: ${opt:DB_USER}
       DB_PASSWORD: ${opt:DB_PASSWORD}
     events:
-      - http: 
+      - http:
           path: projects
           method: get
+          cors: true
+      - http:
+          path: projects
+          method: post
           cors: true
   skills:
     handler: handler.skills
@@ -27,4 +31,8 @@ functions:
       - http: 
           path: skills/{skillId}
           method: delete
+          cors: true
+      - http:
+          path: skills
+          method: post
           cors: true
