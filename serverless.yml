@@ -34,6 +34,10 @@ functions:
     events:
       - http: 
           path: skills/{skillId}
+          method: put
+          cors: true
+      - http: 
+          path: skills/{skillId}
           method: delete
           cors: true    
       - http:
