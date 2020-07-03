@@ -25,6 +25,10 @@ functions:
           path: projects/{projectId}
           method: delete
           cors: true
+      - http: 
+          path: projects/{projectId}
+          method: put
+          cors: true
   skills:
     handler: handler.skills
     environment:
