@@ -188,7 +188,7 @@ app.put("/skills/:skillId/markAsPractised", function (req, res) {
 
 
 
-// put skills
+// update skill name
 
 app.put("/skills/:skillId", function (req, res) {
   connection.query("UPDATE skills SET name = ? WHERE skillId = ?;", [req.body.name, req.params.skillId], function (error, data) {
