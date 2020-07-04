@@ -5,8 +5,8 @@ const bodyParser = require("body-parser");
 const mysql = require("mysql");
 const moment = require("moment");
 
-const { skillChooser } = require('./skillChooser');
-const { markAsPractised } = require('./markAsPractised');
+const { skillChooser } = require("./skillChooser");
+const { markAsPractised } = require("./markAsPractised");
 
 const app = express();
 app.use(cors());
@@ -26,7 +26,10 @@ app.get("/projects", function (req, res) {
   const queryGetProjects = "SELECT * FROM projects WHERE userId = ?;";
   const queryGetSkills = "SELECT * FROM skills WHERE projectId IN (?);";
 
-  connection.query(queryGetProjects, [userIdValue], function (error, projectData) {
+  connection.query(queryGetProjects, [userIdValue], function (
+    error,
+    projectData
+  ) {
     if (error) {
       console.log("Error fetching projects", error);
       res.status(500).json({
@@ -34,7 +37,10 @@ app.get("/projects", function (req, res) {
       });
     } else {
       const projectIds = projectData.map((project) => project.projectId);
-      connection.query(queryGetSkills, [projectIds], function (error, skillData) {
+      connection.query(queryGetSkills, [projectIds], function (
+        error,
+        skillData
+      ) {
         if (error) {
           console.log("Error fetching skills", error);
           res.status(500).json({
@@ -42,9 +48,13 @@ app.get("/projects", function (req, res) {
           });
         } else {
           const data = projectData.map((project) => {
-            const skills = skillData.filter((skill) => skill.projectId === project.projectId);
+            const skills = skillData.filter(
+              (skill) => skill.projectId === project.projectId
+            );
             project.skills = skills;
-            project.skillToDo = skillChooser(skills, moment()) ? skillChooser(skills, moment()).skillId : false;
+            project.skillToDo = skillChooser(skills, moment())
+              ? skillChooser(skills, moment()).skillId
+              : false;
             return project;
           });
           res.status(200).json({
@@ -57,65 +67,80 @@ app.get("/projects", function (req, res) {
 });
 
 app.post("/projects", function (req, res) {
-  const projectAdd = "INSERT INTO projects (name, userId, datePractised) VALUES (?, ?, ?);";
+  const projectAdd =
+    "INSERT INTO projects (name, userId, datePractised) VALUES (?, ?, ?);";
   const querySelect = "SELECT * FROM projects where projectId = ?";
 
-  connection.query(projectAdd, [req.body.name, req.body.userId, req.body.datePractised], function (error, data) {
-    if (error) {
-      console.log("Error adding a project", error);
-      res.status(500).json({
-        error: error,
-      });
-    } else {
-      connection.query(querySelect, [data.insertId], function (error, data) {
-        if (error) {
-          console.log("Error adding a project", error);
-          res.status(500).json({
-            error: error,
-          });
-        } else {
-          res.status(200).json({
-            projects: data,
-          });
-        }
-      });
+  connection.query(
+    projectAdd,
+    [req.body.name, req.body.userId, req.body.datePractised],
+    function (error, data) {
+      if (error) {
+        console.log("Error adding a project", error);
+        res.status(500).json({
+          error: error,
+        });
+      } else {
+        connection.query(querySelect, [data.insertId], function (error, data) {
+          if (error) {
+            console.log("Error adding a project", error);
+            res.status(500).json({
+              error: error,
+            });
+          } else {
+            res.status(200).json({
+              projects: data,
+            });
+          }
+        });
+      }
     }
-  });
+  );
 });
 
 app.delete("/projects/:projectId", function (req, res) {
   const projectId = req.params.projectId;
 
-  connection.query("DELETE FROM skills WHERE projectId = ?;", [projectId], function (error,data) {
-    if (error) {
-      console.log("Error deleting skills from project", error);
-      res.status(500).json({
-        error: error,
-      });
-    } 
-    else {
-      connection.query("DELETE FROM projects WHERE projectId = ?;", [projectId], function (error,data) {
-        if (error) {
-          console.log("Error deleting project", error);
-          res.status(500).json({
-            error: error,
-          });
-        } 
-        else {
-          res.sendStatus(200)
-        }
-      });
+  connection.query(
+    "DELETE FROM skills WHERE projectId = ?;",
+    [projectId],
+    function (error, data) {
+      if (error) {
+        console.log("Error deleting skills from project", error);
+        res.status(500).json({
+          error: error,
+        });
+      } else {
+        connection.query(
+          "DELETE FROM projects WHERE projectId = ?;",
+          [projectId],
+          function (error, data) {
+            if (error) {
+              console.log("Error deleting project", error);
+              res.status(500).json({
+                error: error,
+              });
+            } else {
+              res.sendStatus(200);
+            }
+          }
+        );
+      }
     }
-  });
+  );
 });
 
 // SKILLS ROUTE
 
 app.post("/skills", function (req, res) {
-  const skillAdd = "INSERT INTO skills (name, projectId, started) VALUES (?, ?, ?);";
+  const skillAdd =
+    "INSERT INTO skills (name, projectId, started) VALUES (?, ?, ?);";
   const addedSkill = "SELECT * FROM skills where skillId = ?";
 
-  connection.query(skillAdd, [req.body.name, req.body.projectId, 0], function (error, data) {
+  connection.query(skillAdd, [req.body.name, req.body.projectId, 0], function (
+    error,
+    data
+  ) {
     if (error) {
       console.log("Error adding a skill", error);
       res.status(500).json({
@@ -142,17 +167,20 @@ app.post("/skills", function (req, res) {
 app.delete("/skills/:skillId", function (req, res) {
   const skillId = req.params.skillId;
 
-  connection.query("DELETE FROM skills WHERE skillId = ?;", [skillId], function (error,data) {
-    if (error) {
-      console.log("Error deleting skill", error);
-      res.status(500).json({
-        error: error,
-      });
-    } else {
-      res.sendStatus(200)
+  connection.query(
+    "DELETE FROM skills WHERE skillId = ?;",
+    [skillId],
+    function (error, data) {
+      if (error) {
+        console.log("Error deleting skill", error);
+        res.status(500).json({
+          error: error,
+        });
+      } else {
+        res.sendStatus(200);
+      }
     }
-  })
-
+  );
 });
 
 app.put("/skills/:skillId/markAsPractised", function (req, res) {
@@ -160,49 +188,76 @@ app.put("/skills/:skillId/markAsPractised", function (req, res) {
   const skillIdValue = req.params.skillId;
 
   const queryUpdateSkills = "UPDATE skills SET ? WHERE skillId = ?;";
-  connection.query(queryUpdateSkills, [practisedSkill, skillIdValue], function (error, skillData) {
+  connection.query(queryUpdateSkills, [practisedSkill, skillIdValue], function (
+    error,
+    skillData
+  ) {
     if (error) {
       console.log("Error updating skills", error);
       res.status(500).json({
-        error: error
-      })
-    }
-    else {
-      const queryUpdateProjects = "UPDATE projects SET datePractised = NOW() WHERE projectId = ?;";
-      connection.query(queryUpdateProjects, [practisedSkill.projectId], function (error, projectData) {
-        if (error) {
-          console.log("Error updating project", error);
-          res.status(500).json({
-            error: error
-          })
-        }
-        else {
-          res.status(200).json({
-            practisedSkill
-          })
-        }
+        error: error,
       });
+    } else {
+      const queryUpdateProjects =
+        "UPDATE projects SET datePractised = NOW() WHERE projectId = ?;";
+      connection.query(
+        queryUpdateProjects,
+        [practisedSkill.projectId],
+        function (error, projectData) {
+          if (error) {
+            console.log("Error updating project", error);
+            res.status(500).json({
+              error: error,
+            });
+          } else {
+            res.status(200).json({
+              practisedSkill,
+            });
+          }
+        }
+      );
     }
   });
 });
 
-
-
 // update skill name
 
 app.put("/skills/:skillId", function (req, res) {
-  connection.query("UPDATE skills SET name = ? WHERE skillId = ?;", [req.body.name, req.params.skillId], function (error, data) {
-    if (error) {
-      console.log("Error updating skill", error);
-      res.status(500).json({
-        error
-      });
+  connection.query(
+    "UPDATE skills SET name = ? WHERE skillId = ?;",
+    [req.body.name, req.params.skillId],
+    function (error, data) {
+      if (error) {
+        console.log("Error updating skill", error);
+        res.status(500).json({
+          error,
+        });
+      } else {
+        res.sendStatus(200);
+      }
     }
-    else {
-      res.sendStatus(200);
+  );
+});
+
+// Update new user/s
+app.post("/users", function (req, res) {
+  // get user data,
+  const user = req.body;
+  // const query = "SELECT * FROM users WHERE userId = ?";
+  // /    if (err) {
+  // res.status(500).send(err);
+  // if no user is found, add (new) user to database, "edit datebase"
+  // } else if (!data) {
+  const query = "INSERT INTO users (name, userId) VALUES (?,?)";
+  connection.query(query, [user.name, user.userId], (error, data) => {
+    if (error) {
+      res.status(500).send(error);
+    } else {
+      res.status(201).send("New user added");
     }
   });
 });
 
 module.exports.projects = serverless(app);
 module.exports.skills = serverless(app);
+module.exports.users = serverless(app);
