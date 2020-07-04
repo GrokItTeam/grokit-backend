@@ -130,6 +130,20 @@ app.delete("/projects/:projectId", function (req, res) {
   );
 });
 
+app.put("/projects/:projectId", function (req, res) {
+  connection.query("UPDATE projects SET name = ? WHERE projectId = ?;", [req.body.name, req.params.projectId], function (error, data) {
+    if (error) {
+      console.log("Error updating project", error);
+      res.status(500).json({
+        error
+      });
+    }
+    else {
+      res.sendStatus(200);
+    }
+  });
+});
+
 // SKILLS ROUTE
 
 app.post("/skills", function (req, res) {
@@ -219,8 +233,6 @@ app.put("/skills/:skillId/markAsPractised", function (req, res) {
     }
   });
 });
-
-// update skill name
 
 app.put("/skills/:skillId", function (req, res) {
   connection.query(
