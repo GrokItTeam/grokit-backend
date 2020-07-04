@@ -243,11 +243,6 @@ app.put("/skills/:skillId", function (req, res) {
 app.post("/users", function (req, res) {
   // get user data,
   const user = req.body;
-  // const query = "SELECT * FROM users WHERE userId = ?";
-  // /    if (err) {
-  // res.status(500).send(err);
-  // if no user is found, add (new) user to database, "edit datebase"
-  // } else if (!data) {
   const query = "INSERT INTO users (name, userId) VALUES (?,?)";
   connection.query(query, [user.name, user.userId], (error, data) => {
     if (error) {
