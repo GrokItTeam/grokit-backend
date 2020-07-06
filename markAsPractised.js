@@ -10,13 +10,13 @@ function markAsPractised(skill,today,difficulty) {
 
     switch(difficulty) {
         case "easy":
-            loops = 0;
+            loops = 2;
             break;
         case "medium":
             loops = 1;
             break;
         case "hard":
-            loops = 2;
+            loops = 0;
     }
 
     for (let i = 0; i<loops; i++) {
