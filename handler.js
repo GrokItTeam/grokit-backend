@@ -197,9 +197,10 @@ app.delete("/skills/:skillId", function (req, res) {
   );
 });
 
-app.put("/skills/:skillId/markAsPractised", function (req, res) {
-  const practisedSkill = markAsPractised(req.body, moment());
-  const skillIdValue = req.params.skillId;
+app.put("/skills/markAsPractised/:difficulty", function (req, res) {
+
+  const practisedSkill = markAsPractised(req.body, moment(),req.params.difficulty);
+  const skillIdValue = req.body.skillId;
 
   const queryUpdateSkills = "UPDATE skills SET ? WHERE skillId = ?;";
   connection.query(queryUpdateSkills, [practisedSkill, skillIdValue], function (
