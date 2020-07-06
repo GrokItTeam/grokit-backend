@@ -50,7 +50,7 @@ functions:
           method: post
           cors: true
       - http: 
-          path: skills/{skillId}/markAsPractised
+          path: skills/markAsPractised/{difficulty}
           method: put
           cors: true
   users:
