@@ -36,6 +36,12 @@ app.get("/projects", function (req, res) {
         error: error,
       });
     } else {
+      if (projectData.length == 0) {
+        res.status(200).json({
+          projects: projectData,
+        });
+      }
+      else {
       const projectIds = projectData.map((project) => project.projectId);
       connection.query(queryGetSkills, [projectIds], function (
         error,
@@ -63,6 +69,7 @@ app.get("/projects", function (req, res) {
         }
       });
     }
+  }
   });
 });
 
