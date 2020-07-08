@@ -7,6 +7,7 @@ const moment = require("moment");
 
 const { skillChooser } = require("./skillChooser");
 const { markAsPractised } = require("./markAsPractised");
+const { produceFormattedBackendData } = require("./importLineChartData");
 
 const app = express();
 app.use(cors());
@@ -285,8 +286,9 @@ app.get("/linechart", function (req, res) {
       });
     }
     else {
+      const formattedData = produceFormattedBackendData(data);
       res.status(200).json({
-        linechartData: data,
+        linechartData: formattedData,
       })
     }
   })
