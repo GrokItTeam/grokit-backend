@@ -4,7 +4,7 @@ provider:
   name: aws
   runtime: nodejs12.x
   region: eu-west-2
-  profile: grokit
+  profile: default
 
 functions:
   projects:
@@ -63,4 +63,15 @@ functions:
       - http:
           path: users
           method: post
+          cors: true
+  linechart:
+    handler: handler.linechart
+    environment:
+      DB_HOST: ${opt:DB_HOST}
+      DB_USER: ${opt:DB_USER}
+      DB_PASSWORD: ${opt:DB_PASSWORD}
+    events:
+      - http:
+          path: linechart
+          method: get
           cors: true

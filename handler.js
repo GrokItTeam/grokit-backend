@@ -273,6 +273,27 @@ app.post("/users", function (req, res) {
   });
 });
 
+// LINECHART
+
+app.get("/linechart", function (req, res) {
+  const userId = req.query.userId;
+  const queryGetLinechartData = "SELECT dateFirstPractised, day, linechart.lastGap0, linechart.lastGap1, linechart.skillId, projects.name projectName, skills.name skillName FROM linechart INNER JOIN skills ON skills.skillId = linechart.skillId INNER JOIN projects ON projects.projectId = skills.projectId;";
+  connection.query(queryGetLinechartData, [userId], function (error, data) {
+    if (error) {
+      res.status(500).json({
+        error,
+      });
+    }
+    else {
+      res.status(200).json({
+        linechartData: data,
+      })
+    }
+  })
+})
+
+
 module.exports.projects = serverless(app);
 module.exports.skills = serverless(app);
 module.exports.users = serverless(app);
+module.exports.linechart = serverless(app);
