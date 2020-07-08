@@ -194,7 +194,9 @@ app.put("/skills/markAsPractised/:difficulty", function (req, res) {
             });
           }
           else {
-            res.sendStatus(201);
+            res.status(200).json({
+              practisedSkill
+            });
           }
         });
       }
@@ -218,7 +220,9 @@ app.put("/skills/markAsPractised/:difficulty", function (req, res) {
                 });
               }
               else {
-                res.sendStatus(201);
+                res.status(200).json({
+                  practisedSkill
+                });
               }
             });
           }
