@@ -7,6 +7,7 @@ const moment = require("moment");
 
 const { skillChooser } = require("./skillChooser");
 const { markAsPractised } = require("./markAsPractised");
+const { produceLineChartData, produceProjectsData } = require("./formatDataFromDatabase");
 
 const app = express();
 app.use(cors());
@@ -17,59 +18,34 @@ const connection = mysql.createConnection({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: "grokit",
+  multipleStatements: true,
 });
 
 // PROJECTS ROUTE
 
 app.get("/projects", function (req, res) {
   const userIdValue = req.query.userId;
-  const queryGetProjects = "SELECT * FROM projects WHERE userId = ?;";
-  const queryGetSkills = "SELECT * FROM skills WHERE projectId IN (?);";
+  const query = "SELECT skillId, nextDate, skills.name skillName, lastGap0, lastGap1, started, projects.projectId, projects.name projectName, datePractised FROM projects LEFT JOIN skills ON skills.projectID = projects.projectId WHERE userId = ?;";
 
-  connection.query(queryGetProjects, [userIdValue], function (
-    error,
-    projectData
-  ) {
+  connection.query(query, [userIdValue], function (error, data) {
     if (error) {
       console.log("Error fetching projects", error);
       res.status(500).json({
-        error: error,
-      });
-    } else {
-      if (projectData.length == 0) {
-        res.status(200).json({
-          projects: projectData,
-        });
-      }
-      else {
-      const projectIds = projectData.map((project) => project.projectId);
-      connection.query(queryGetSkills, [projectIds], function (
         error,
-        skillData
-      ) {
-        if (error) {
-          console.log("Error fetching skills", error);
-          res.status(500).json({
-            error: error,
-          });
-        } else {
-          const data = projectData.map((project) => {
-            const skills = skillData.filter(
-              (skill) => skill.projectId === project.projectId
-            );
-            project.skills = skills;
-            project.skillToDo = skillChooser(skills, moment())
-              ? skillChooser(skills, moment()).skillId
-              : false;
-            return project;
-          });
-          res.status(200).json({
-            projects: data,
-          });
-        }
       });
     }
-  }
+    else {
+      const projects = produceProjectsData(data);
+      projects.map(project => {
+        project.skillToDo = skillChooser(project.skills, moment())
+          ? skillChooser(project.skills, moment()).skillId
+          : false;
+          return project;
+      })
+      res.status(200).json({
+        projects,
+      })
+    }
   });
 });
 
@@ -107,34 +83,19 @@ app.post("/projects", function (req, res) {
 
 app.delete("/projects/:projectId", function (req, res) {
   const projectId = req.params.projectId;
-
   connection.query(
-    "DELETE FROM skills WHERE projectId = ?;",
+    "DELETE FROM projects WHERE projectId = ?;",
     [projectId],
     function (error, data) {
       if (error) {
-        console.log("Error deleting skills from project", error);
+        console.log("Error deleting project", error);
         res.status(500).json({
           error: error,
         });
       } else {
-        connection.query(
-          "DELETE FROM projects WHERE projectId = ?;",
-          [projectId],
-          function (error, data) {
-            if (error) {
-              console.log("Error deleting project", error);
-              res.status(500).json({
-                error: error,
-              });
-            } else {
-              res.sendStatus(200);
-            }
-          }
-        );
+        res.sendStatus(200);
       }
-    }
-  );
+    });
 });
 
 app.put("/projects/:projectId", function (req, res) {
@@ -187,7 +148,6 @@ app.post("/skills", function (req, res) {
 
 app.delete("/skills/:skillId", function (req, res) {
   const skillId = req.params.skillId;
-
   connection.query(
     "DELETE FROM skills WHERE skillId = ?;",
     [skillId],
@@ -200,44 +160,74 @@ app.delete("/skills/:skillId", function (req, res) {
       } else {
         res.sendStatus(200);
       }
-    }
-  );
+    });
 });
 
-app.put("/skills/markAsPractised/:difficulty", function (req, res) {
+// Mark skill as practised and add to linechart data
 
-  const practisedSkill = markAsPractised(req.body, moment(),req.params.difficulty);
+app.put("/skills/markAsPractised/:difficulty", function (req, res) {
+  const isFirstPractice = !req.body.started;
+  const linechartItem = req.body;
+
+  const practisedSkill = markAsPractised(req.body, moment(), req.params.difficulty);
   const skillIdValue = req.body.skillId;
 
-  const queryUpdateSkills = "UPDATE skills SET ? WHERE skillId = ?;";
-  connection.query(queryUpdateSkills, [practisedSkill, skillIdValue], function (
+  const queryUpdate = "UPDATE skills SET ? WHERE skillId = ?; UPDATE projects SET datePractised = NOW() WHERE projectId = ?;";
+  connection.query(queryUpdate, [practisedSkill, skillIdValue, practisedSkill.projectId], function (
     error,
-    skillData
+    updateData
   ) {
     if (error) {
-      console.log("Error updating skills", error);
+      console.log("Error updating skills and projects", error);
       res.status(500).json({
         error: error,
       });
-    } else {
-      const queryUpdateProjects =
-        "UPDATE projects SET datePractised = NOW() WHERE projectId = ?;";
-      connection.query(
-        queryUpdateProjects,
-        [practisedSkill.projectId],
-        function (error, projectData) {
+    }
+    else {
+      if (isFirstPractice) {
+        const queryAddNewLineChartData = "INSERT INTO linechart (dateFirstPractised, day, lastGap0, lastGap1, skillId) VALUES (NOW(), 0, ?, ?,?);";
+        connection.query(queryAddNewLineChartData, [linechartItem.lastGap0, linechartItem.lastGap1, skillIdValue], function (error, data) {
           if (error) {
-            console.log("Error updating project", error);
+            console.log("Error posting linechart data for new skill practise", error);
             res.status(500).json({
               error: error,
             });
-          } else {
+          }
+          else {
             res.status(200).json({
-              practisedSkill,
+              practisedSkill
             });
           }
-        }
-      );
+        });
+      }
+      else {
+        connection.query("SELECT dateFirstPractised FROM linechart WHERE skillId = ?;", [skillIdValue], function (error, dateFirstPractisedData) {
+          if (error) {
+            console.log("Error selecting date first practised", error);
+            res.status(500).json({
+              error: error,
+            });
+          }
+          else {
+            const dateFirstPractised = moment(dateFirstPractisedData[0].dateFirstPractised).format("YYYY-MM-DD");
+            const days = moment().diff(moment(dateFirstPractised), "days");
+            const queryAddLineChartData = "INSERT INTO linechart (dateFirstPractised, day, lastGap0, lastGap1, skillId) VALUES (?, ?, ?, ?,?);";
+            connection.query(queryAddLineChartData, [dateFirstPractised, days, linechartItem.lastGap0, linechartItem.lastGap1, skillIdValue], function (error, data) {
+              if (error) {
+                console.log("Error posting linechart data for repeated skill practise", error);
+                res.status(500).json({
+                  error: error,
+                });
+              }
+              else {
+                res.status(200).json({
+                  practisedSkill
+                });
+              }
+            });
+          }
+        });
+      }
     }
   });
 });
@@ -273,6 +263,28 @@ app.post("/users", function (req, res) {
   });
 });
 
+// LINECHART
+
+app.get("/linechart", function (req, res) {
+  const userId = req.query.userId;
+  const queryGetLinechartData = "SELECT dateFirstPractised, day, linechart.lastGap0, linechart.lastGap1, linechart.skillId, projects.name projectName, skills.name skillName FROM linechart INNER JOIN skills ON skills.skillId = linechart.skillId INNER JOIN projects ON projects.projectId = skills.projectId WHERE userId = ?;";
+  connection.query(queryGetLinechartData, [userId], function (error, data) {
+    if (error) {
+      res.status(500).json({
+        error,
+      });
+    }
+    else {
+      const formattedData = produceLineChartData(data);
+      res.status(200).json({
+        linechartData: formattedData,
+      })
+    }
+  })
+})
+
+
 module.exports.projects = serverless(app);
 module.exports.skills = serverless(app);
 module.exports.users = serverless(app);
+module.exports.linechart = serverless(app);
