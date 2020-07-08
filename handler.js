@@ -189,30 +189,19 @@ app.post("/skills", function (req, res) {
 
 app.delete("/skills/:skillId", function (req, res) {
   const skillId = req.params.skillId;
-
-  connection.query("DELETE FROM linechart WHERE skillId = ?;", [skillId], function (error, data) {
-    if (error) {
-      console.log("Error deleting linechart data", error);
-      res.status(500).json({
-        error: error,
-      });
-    }
-    else {
-      connection.query(
-        "DELETE FROM skills WHERE skillId = ?;",
-        [skillId],
-        function (error, data) {
-          if (error) {
-            console.log("Error deleting skill", error);
-            res.status(500).json({
-              error: error,
-            });
-          } else {
-            res.sendStatus(200);
-          }
+  connection.query(
+    "DELETE FROM skills WHERE skillId = ?;",
+    [skillId],
+    function (error, data) {
+      if (error) {
+        console.log("Error deleting skill", error);
+        res.status(500).json({
+          error: error,
         });
-    }
-  });
+      } else {
+        res.sendStatus(200);
+      }
+    });
 });
 
 // Mark skill as practised and add to linechart data
