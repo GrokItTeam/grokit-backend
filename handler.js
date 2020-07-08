@@ -7,7 +7,7 @@ const moment = require("moment");
 
 const { skillChooser } = require("./skillChooser");
 const { markAsPractised } = require("./markAsPractised");
-const { produceFormattedBackendData } = require("./importLineChartData");
+const { produceLineChartData, produceProjectsData } = require("./formatDataFromDatabase");
 
 const app = express();
 app.use(cors());
@@ -25,52 +25,26 @@ const connection = mysql.createConnection({
 
 app.get("/projects", function (req, res) {
   const userIdValue = req.query.userId;
-  const queryGetProjects = "SELECT * FROM projects WHERE userId = ?;";
-  const queryGetSkills = "SELECT * FROM skills WHERE projectId IN (?);";
+  const query = "SELECT skillId, nextDate, skills.name skillName, lastGap0, lastGap1, started, projects.projectId, projects.name projectName, datePractised FROM projects LEFT JOIN skills ON skills.projectID = projects.projectId WHERE userId = ?;";
 
-  connection.query(queryGetProjects, [userIdValue], function (
-    error,
-    projectData
-  ) {
+  connection.query(query, [userIdValue], function (error, data) {
     if (error) {
       console.log("Error fetching projects", error);
       res.status(500).json({
-        error: error,
+        error,
       });
-    } else {
-      if (projectData.length == 0) {
-        res.status(200).json({
-          projects: projectData,
-        });
-      }
-      else {
-        const projectIds = projectData.map((project) => project.projectId);
-        connection.query(queryGetSkills, [projectIds], function (
-          error,
-          skillData
-        ) {
-          if (error) {
-            console.log("Error fetching skills", error);
-            res.status(500).json({
-              error: error,
-            });
-          } else {
-            const data = projectData.map((project) => {
-              const skills = skillData.filter(
-                (skill) => skill.projectId === project.projectId
-              );
-              project.skills = skills;
-              project.skillToDo = skillChooser(skills, moment())
-                ? skillChooser(skills, moment()).skillId
-                : false;
-              return project;
-            });
-            res.status(200).json({
-              projects: data,
-            });
-          }
-        });
-      }
+    }
+    else {
+      const projects = produceProjectsData(data);
+      projects.map(project => {
+        project.skillToDo = skillChooser(project.skills, moment())
+          ? skillChooser(project.skills, moment()).skillId
+          : false;
+          return project;
+      })
+      res.status(200).json({
+        projects,
+      })
     }
   });
 });
@@ -289,7 +263,7 @@ app.post("/users", function (req, res) {
 
 app.get("/linechart", function (req, res) {
   const userId = req.query.userId;
-  const queryGetLinechartData = "SELECT dateFirstPractised, day, linechart.lastGap0, linechart.lastGap1, linechart.skillId, projects.name projectName, skills.name skillName FROM linechart INNER JOIN skills ON skills.skillId = linechart.skillId INNER JOIN projects ON projects.projectId = skills.projectId;";
+  const queryGetLinechartData = "SELECT dateFirstPractised, day, linechart.lastGap0, linechart.lastGap1, linechart.skillId, projects.name projectName, skills.name skillName FROM linechart INNER JOIN skills ON skills.skillId = linechart.skillId INNER JOIN projects ON projects.projectId = skills.projectId WHERE userId = ?;";
   connection.query(queryGetLinechartData, [userId], function (error, data) {
     if (error) {
       res.status(500).json({
@@ -297,7 +271,7 @@ app.get("/linechart", function (req, res) {
       });
     }
     else {
-      const formattedData = produceFormattedBackendData(data);
+      const formattedData = produceLineChartData(data);
       res.status(200).json({
         linechartData: formattedData,
       })
