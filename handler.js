@@ -8,6 +8,7 @@ const moment = require("moment");
 const { skillChooser } = require("./skillChooser");
 const { markAsPractised } = require("./markAsPractised");
 const { produceLineChartData, produceProjectsData } = require("./formatDataFromDatabase");
+const { produceSchedule } = require("./produceSchedule");
 
 const app = express();
 app.use(cors());
@@ -247,6 +248,26 @@ app.put("/skills/:skillId", function (req, res) {
       }
     }
   );
+});
+
+app.get("/skills/schedule/:projectId/:datePractised", function (req,res) {
+  const projectIdValue = req.params.projectId;
+  const datePractisedValue = req.params.datePractised;
+  const endDateValue = req.query.endDate;
+  connection.query("SELECT * FROM skills WHERE projectId = ?", [projectIdValue], function (error, skillData) {
+    if (error) {
+      console.log("Error getting skills", error);
+      res.status(500).json({
+        error
+      });
+    }
+    else {
+      const schedule = produceSchedule(moment(),endDateValue,datePractisedValue,skillData);
+      res.status(200).json({
+        schedule
+      });
+    }
+  });
 });
 
 // Update new user/s

@@ -4,7 +4,7 @@ provider:
   name: aws
   runtime: nodejs12.x
   region: eu-west-2
-  profile: grokit
+  profile: default
 
 functions:
   projects:
@@ -52,6 +52,10 @@ functions:
       - http: 
           path: skills/markAsPractised/{difficulty}
           method: put
+          cors: true
+      - http: 
+          path: skills/schedule/{projectId}/{datePractised}
+          method: get
           cors: true
   users:
     handler: handler.users
