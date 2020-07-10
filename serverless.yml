@@ -53,6 +53,10 @@ functions:
           path: skills/markAsPractised/{difficulty}
           method: put
           cors: true
+      - http: 
+          path: skills/schedule/{projectId}/{datePractised}
+          method: get
+          cors: true
   users:
     handler: handler.users
     environment:
